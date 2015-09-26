@@ -1,0 +1,40 @@
+Building dt
+-----------
+ You can either use the supplied binary or compile dt yourself.
+
+ Since 1.0.1, there have been some configurable options in
+the file config.h. If you want to change these, do it now.
+
+LOGIN_SHELL - if this is defined, shells will be started as login shells
+HIDE_MOUSE - hide the mouse on keyboard input
+DEFAULT_NUMVT - number of vts to start initially (moved from main.c. this is a part of the original)
+LAME_OPTION - if your option key seems to remain stuck after you use it, 
+	define this. Otherwise don't, because it can create the problem 
+	it's supposed to fix (happens on my IIsi) This is no longer needed 
+	for -current kernels from June 30th 1995 or newer
+OPTSET - if this is defined, alt and alt-shift produce whatever the keyboard 
+	layout has in store for them. Otherwise alt just escapes the 
+	character (1.0 behavior). If you use the Finnish layout, you'll 
+	definitely want this defined
+UTMP - if defined, utmp entries are written for the consoles. See README.
+GRF_COMPAT - if you want to run dt on pre-July or so kernels, define this 
+	(untested)
+UNDERLINE - do real underlining instead of replacing underline with 
+	bold (sorta slow)
+BEEP - whether to sound beeps by default
+MOUSE_ACCEL - mouse acceleration
+INVERSE - white on black
+
+Keyboard layouts
+
+ Select one of the following in config.h:
+FI_LAYOUT Finnish Extended keyboard
+FR_LAYOUT French AppleDesign keyboard
+US_LAYOUT US keyboard
+GER_LAYOUT German keyboard
+
+ Then just type 'make' and you should have a binary after it has compiled. 
+If there's a problem, mail me, with a fix for it and/or a description of 
+the problem.
+
+$Id: CONFIG,v 1.7 1996/06/09 12:34:54 vuori Exp $

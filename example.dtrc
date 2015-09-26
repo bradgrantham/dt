@@ -1,0 +1,29 @@
+# Example .dtrc
+#  Move it to your ~ and call it .dtrc if you want to use it
+# $Id: example.dtrc,v 1.2 1995/07/01 18:26:31 vuori Exp $
+
+# Control characters must be quoted
+# F1
+1
+# F2
+2
+# F3
+3
+# F4
+4
+# F5
+blah
+# F6
+ojnk
+# F7
+at&t you will
+# F8
+stty rows 48 cols 106
+# F9
+c
+# F10
+k
+# F11
+/wind serv
+# F12
+bleck

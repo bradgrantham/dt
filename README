@@ -1,0 +1,84 @@
+Desktop - Virtual consoles for NetBSD/mac
+-------
+by Lawrence and Brad
+and lately Valtteri Vuorikoski
+
+Send suggestions, etc. to vuori@sci.fi.
+
+Quicky man page:
+  Command-{1,2,3,...} changes virtual terminals
+  Command-Shift-{1,2,3,...} change current VT to another display
+  Command-F changes the font
+  Command-O opens a new VT
+  Command-P toggles pointer
+  Command-X pastes the selected text
+  Command-V pastes the copied text
+  Command-C copies the selected text
+  Command-{up-arrow,down-arrow} goes up/down one line at a time
+  Command-{home,end} scrolls to the beginning/end of scrollback buffer
+  Command-{pageup,pagedown} goes up/down a half page at a time
+  F1...F12 configurable macro keys (see later in this file about .dtrc)
+  F15 reloads your .dtrc
+
+Set your $TERM to vt220 and unset $LINES.
+
+Not tested on small or large (non-640x480) screens, etc.  All displays
+must be in 1-bit mode.
+
+The distribution binary has a fairly 'standard' configuration, which should
+work on most machines. It uses the US keyboard layout. If you want to change
+something, you should read the file CONFIG and change config.h accordingly.
+
+IIsi note: if using option causes it to get 'stuck', you should define
+LAME_OPTION and BROKED_ADB, if the console hangs after exiting dt.
+
+You need a fairly recent netbsd kernel to run this and you need
+to setup the following as root or in single-user mode if the files
+'adb', 'grf0' and 'grf1' don't exist in /dev:
+
+  # cd /dev
+  # MAKEDEV adb
+  # MAKEDEV grf0
+  # MAKEDEV grf1
+
+Note that the installer should have set this up for you.
+
+If you exit a shell and it appears "hung", it is not hung.  Command-O
+will open the VT again.  Exit desktop by exiting all of the shells.
+
+Digraphs are now available, ie. umlaut + a produces a-umlaut (ä for 
+the 8-bit clean). You might need to do stty -istrip so that the 8th
+bit doesn't get stripped from input by the tty driver.
+
+If you want dt to write utmp entries for the consoles, make it sgid to
+group utmp:
+
+ # chgrp utmp dt
+ # chmod g+s dt
+
+It's hopefully secure.
+
+Beeps can be turned on/off by sending dt SIGUSR1 or SIGUSR2, respectively.
+
+Type "dt -h" for command-line options.
+
+The following documentation is available:
+ dt.txt		plaintext docs
+ dt.ps		Postscript docs
+ dt.html	html docs
+They are all say basically say the same thing.
+
+The .dtrc file
+--------------
+ This is a rather primitive control file for dt that allows you to specify
+what the function keys do. Every line represents what a function key from 
+1 to 12 should output, except for empty lines which do nothing and lines 
+beginning with #, which mark the rest of the line as a comment.
+
+ The file containing the macros should be called .dtrc and it should be placed
+in your home directory. It is loaded on startup, and pressing F15 reloads it.
+
+ An example .dtrc file, called 'example.dtrc', is included with the 
+distribution.
+
+$Id: README,v 1.5 1995/10/06 10:15:17 vuori Exp $

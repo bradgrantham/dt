@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# attempt to see if we're running on an SE/30 and not using USE_OLD_GRF
+# and warn user if we are
+
+# $Id: groksevid,v 1.3 1996/11/12 21:23:55 vuori Exp $
+
+if dmesg | grep -q '^Mac II class ROMs' ; then
+
+ if grep -q '^#define.*USE_OLD_GRF' config.h ; then
+  exit 0
+ fi
+
+ echo "NOTE: if you are using an SE/30 and don't have USE_OLD_GRF defined in"
+ echo "config.h, dt might break (as of Nov 12, 1996). Recommend"
+ echo "that you define USE_OLD_GRF in config.h unless you know that the"
+ echo "problem with mmap()ing the framebuffer on SE/30 is fixed."
+ echo "Don't define it except on SE/30 as it has problems then too."
+ echo "happy happy joy joy"
+fi
+
+exit 0

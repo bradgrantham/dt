@@ -1,0 +1,139 @@
+<!-- $Id: dt.html,v 1.6 1995/10/31 20:33:30 vuori Exp $ -->
+
+<html>
+<head>
+<title>dt(1)</title>
+</head>
+<body>
+<h2>Name</h2>
+<strong>dt</strong> - Desktop 1.1.3, a virtual console program for NetBSD/mac<p>
+
+<h2>Synopsis</h2>
+<code>
+<kbd>dt [-n</kbd> <var>numvt</var><kbd>] [-f</kbd> <var>font</var><kbd>]</kbd><p>
+</code>
+
+<h2>Description</h2>
+dt provides virtual consoles for NetBSD/mac like <cite>screen(1)</cite>
+with the difference that dt directly accesses the framebuffer and the
+keyboard, so it is faster, and new keyboard mappings can be defined
+without recompiling the kernel. Because of the framebuffer and keyboard
+access, the only supported platform is NetBSD/mac.<p>
+
+<h2>Options</h2>
+<dl>
+<dt><kbd>-n</kbd> <var>numvt</var>
+<dd><var>numvt</var> specifies the number of virtual terminals to
+open when dt is started.
+<dt><kbd>-f</kbd> <var>font</var>
+<dd>Specifies the name of the font to use. This can be either
+<kbd>large</kbd> (8x13 font) or <kbd>small</kbd> (6x10 font).
+</dl>
+<p>
+
+<h2>Keys</h2>
+The following keys can be used to control dt:<p>
+<dl>
+<dt><dfn>Command-<kbd>1..9</kbd></dfn>
+<dd>Switches between virtual terminals 1-9
+<dt><dfn>Command-Shift-<kbd>1..9</kbd></dfn>
+<dd>Switches the current terminal to another display
+<dt><dfn>Command-up/down
+<dd>Scrolls the scroll buffer up/down by one line
+<dt><dfn>Command-home/end
+<dd>Scrolls to beginning/end of the scroll buffer
+<dt><dfn>Command-pgup/pgdn
+<dd>Scrolls the scroll buffer up/down by one page
+<dt><dfn>Command-<kbd>C</kbd></dfn>
+<dd>Copies the selected text
+<dt><dfn>Command-<kbd>F</kbd></dfn>
+<dd>Switches between the two fonts
+<dt><dfn>Command-<kbd>O</kbd></dfn>
+<dd>Opens a new virtual terminal
+<dt><dfn>Command-<kbd>P</kbd></dfn>
+<dd>Toggles the mouse pointer on/off
+<dt><dfn>Command-<kbd>V</kbd></dfn>
+<dd>Pastes the copied text
+<dt><dfn>Command-<kbd>X</kbd></dfn>
+<dd>Pastes the selected text
+<dt><dfn><kbd>F1..F12</kbd></dfn>
+<dd>Programmable macro keys
+<dt><dfn><kbd>F15</kbd></dfn>
+<dd>Reloads the function key macros from your .dtrc
+</dl>
+<p>
+
+<h2>Digraphs</h2>
+Digraphs can be used to produce characters not in the normal keyboard
+layout, or as an easier-to-remember alternative to other key combinations.
+For example, <kbd>Option-^</kbd> and then <kbd>a</kbd> produces, well, something .<p>
+Supported digraphing characters are <samp>^</samp> (caret), <samp>~</samp> (tilde), 
+<samp>'</samp> (quote),
+<samp>`</samp> (backquote) and <samp>&uml;</samp> (umlaut).
+Of these, all except umlaut require you to have the Option-key down 
+for them to interpreted as starting a digraph with the US keyboard. With a Finnish
+keyboard, option isn't required.
+<p>
+
+<h2>Function key macros</h2>
+You can specify macros for function keys <kbd>F1</kbd> to <kbd>F12</kbd> by
+placing the file <samp>.dtrc</samp> in your home directory.<p>
+Each line that doesn't begin with an <samp>#</samp> and is not empty
+is treated as a macro for the next yet-unspecified function key.<p>
+Lines beginning with <samp>#</samp> are ignored as comments.<p>
+Here is a sample .dtrc:<p>
+<pre>
+# A sample .dtrc file. This is a comment
+
+# F1 will now act as if you had typed 'foo'. The previous line is empty,
+# therefore it is ignored.
+foo
+# F2
+bar
+# F3 will produce the sequence C-x 1. You must quote the control character
+# for it to be inserted into the file. In vi and emacs, you can add C-x to
+# the file by typing C-v C-x.
+^X1
+# Note that typing ^X (caret and X) will not work unless you want to produce
+# a caret and X
+</pre>
+<kbd>F15</kbd> will cause your .dtrc file to be reloaded.<p>
+
+<h2>Signals</h2>
+You can send the following signals to the dt process to control beeping:
+<dl>
+<dt><code>SIGUSR1</code>
+<dd>Turns beeps on
+<dt><code>SIGUSR2</code>
+<dd>Turns beeps off
+</dl>
+<p>
+
+<h2>Files</h2>
+<dl>
+<dt>$HOME/.dtrc
+<dd>Specifies the user's function key macros
+</dl>
+<p>
+
+<h2>See Also</h2>
+<cite>screen(1)</cite><p>
+
+<h2>Availability</h2>
+The latest released version of dt is available from
+<em><a href="ftp://puma.bevd.blacksburg.va.us/pub/NetBSD/utils/dt">
+ftp://puma.bevd.blacksburg.va.us/pub/NetBSD/utils/dt</a></em>
+<p>
+
+<h2>Bugs</h2>
+<ul>
+<li>After the shell exits, ptys don't seem to be correctly closed
+<li>The maintainer is lazy
+</ul>
+<p>
+
+<h2>Author</h2>
+<address>Valtteri Vuorikoski &lt;vuori@sci.fi&gt;</address>
+<p>
+</body>
+</html>
