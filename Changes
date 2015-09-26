@@ -1,0 +1,125 @@
+ Changes to dt (desktop) since the epoch ...
+
+0.00
+----
+ Initial release, that had pieces of it in the kernel
+
+1.0
+---
+ Pulled out of the kernel, apparently last release by Lawrence and Brad
+
+1.0.1 (5/16/1995)
+-----
+ Maintained by Valtteri Vuorikoski vuori@sci.fi from now on
+
+- the deadlock when doing an xoff in the middle of output no longer occurs
+- the mouse cursor disappears on keyboard input (and reappers when you move the mouse)
+  like in MacOS
+- when I used the option key, it seemed to remain down so all the characters were
+  escaped. This is currently sorta-fixed. It escapes the one you want to escape and
+  the next one too
+- there's now actual signal handling
+- the small font is always used for small screens now (< 1280 wide)
+- revamped the Makefile
+- included an alternate keyboard.h for Finnish keyboard layouts
+
+1.0.2 (6/3/1995)
+-----
+- made underlining look like bold (there wasn't any before, so..)
+- added vt220 codes for the pgup/pgdn/home/end keys
+- changed configuration parameter CUSTOM_LAYOUT to FI_LAYOUT
+- included uskeyboard.h and fikeyboard.h (finnish keyboard layout). Both have
+  some added codes for command-keys and codes for alt and alt-shifted keys
+- alt and alt-shifted keys can now be used for other things besides meta
+  is OPTSET is defined
+- copy/paste keys have changed. Command-X does the old-style paste-selection,
+  Command-V pastes copied text and Command-C copies
+- added an 8-bit 6x10 latin-1 font and support for it sure, and also bold 6x10 
+  (with non-bold 8th bit, schumacher fonts only have the 7-bit set)
+- changed the 8x14 font to a 8x13 latin-1 font
+- made code 8-bit clean
+- added function key macros and a .dtrc for specifying them
+- added LAME_OPTION configuration option and code to fix machines on which
+  option produces two keydowns instead of keydown-keyup (happens on my IIsi)
+
+1.1 (7/25/1995)
+---
+- null characters are no longer sent except by control-space
+- dt doesn't start and just put up an empty screen if no usable grf-devices
+  are found but complains and exits instead
+- utmp entries are now added for vts
+- some keys were added to the finnish mapping and the umlaut to the us-mapping
+  for maximum digraph enjoyment
+- added MacOS-style digraphs
+- the example .dtrc mentioned in the docs now exists
+- pty[pqrs] are now used
+- now using the new grf-device interface
+- won't try to use grfs that aren't in 1-bit mode
+- real underlining that's pretty inefficient
+- minor micro-optimizations to grf.c and blit.c, mostly negated by the above
+- implemented insert mode and something resembling reset terminal
+- fixed command-home/end crashes
+- it beeps
+- added better-looking documentation than README. It's missing a few things,
+  but still looks better than the README
+
+1.1.1 (7/26/1995)
+-----
+- fixed missing {s when #undef UNDERLINE
+- added signal descriptions to the new docs
+- fixed wrong-grfioctl.h-included things
+
+1.1.2 (7/27/1995)
+-----
+- fixed the wrong-grfioctl.h-included things for good
+
+1.1.3 (1/11/1995)
+-----
+- fixed Makefile.prof and Makefile.debug trying to link with vers.h
+- added some improvements to the digraph code, new digraphs and a 
+  new uskeyboard.h with option and options-shifted maps. Thanks to
+  Bill Studenmund <wrstuden@loki.stanford.edu> for these.
+- OPTSET is now defined in the distribution binary/config.h by default
+- updated the docs to include digraphs
+- non-digraphable characters after digraph starters are now printed
+  in addition to the digraph character (except for space)
+- fix lack of text scrolling downwards in some cases in vi (from Francois
+  Pays <francois@pluton.sema-itf.fr>)
+- French AppleDesign keyboard layout (from Francois Pays 
+  <francois@pluton.sema-itf.fr>)
+- fix console hanging after exit
+- fixed last column scrolling (from Francois Pays
+  <francois@pluton.sema-itf.fr>)
+
+1.1.4 (6/9/1996)
+-----
+- added mouse acceleration patch from Nakoruru <nakoruru@wam.umd.edu>
+- C-- produces 0x1F, C-6 produces 0x1E
+- version.sh -> ./version.sh in the Makefile for .-in-path-less-people
+- changed the PRESENTATION #define to APPLICATION, made default (it's
+  what the termcap has), changed kbd.c accordingly (it still sends
+  ^[OA etc. like before, just the names changed)
+- close the adb file descriptor when forking a shell
+- quick fix for crashing on some screen sizes when mouse pointer is moved beyond
+  the lower-right corner (see mux.c to enable it)
+- inverted colors as an option (INVERSE) (with suggestions from M.R. Zucca
+  <mrz5149@cs.rit.edu>)
+- added a German keyboard layout from Hauke Fath
+  <saw@sun0.urz.uni-heidelberg.de>
+
+1.1.5 (11/12/1996)
+-----
+- add gerkeyboard.h to the cvs tree, actually have it in the package
+- added USE_OLD_GRF to force using of old grf mapping interface for some
+  problem cases with the new interface (SE/30 as of Nov 12 1996)
+
+1.1.6
+-----
+- fix Makefile lossage
+- apply patch to correct misuse of a static structure (from Bill Studenmund)
+- update version number in utmp.h
+- apply patch to allow specifying which grf device to use (from SUNAGAWA Keiki <kei_sun@ba2.so-net.or.jp>)
+- frobbed uskeyboard.h to produce something-or-other control char with
+  the correct key(s) (from Tom 'moof' Spindler <dogcow@stimpy.us.itd.umich.edu>)
+
+$Id: Changes,v 1.23 1998/03/20 14:20:11 vuori Exp $
