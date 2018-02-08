@@ -32,6 +32,7 @@ bname(char *str)
 int 
 utmp_addentry(int fd, char *host)
 {
+#ifdef HANDLE_UTMP
 	char   *login = getlogin(), *tty;
 	struct utmp entry;
 
@@ -54,6 +55,7 @@ utmp_addentry(int fd, char *host)
 	lseek(utmpfd, 0, SEEK_END);
 	write(utmpfd, (void *) &entry, sizeof(entry));
 	flock(utmpfd, LOCK_UN);
+#endif
 
 	return 1;
 }
@@ -61,6 +63,7 @@ utmp_addentry(int fd, char *host)
 int 
 utmp_delentry(int fd)
 {
+#ifdef HANDLE_UTMP
 	char   *login = getlogin(), *tty;
 	struct utmp entry;
 	char    found = 0;
@@ -96,24 +99,33 @@ utmp_delentry(int fd)
 	flock(utmpfd, LOCK_UN);
 
 	return found;
+#else
+        return 0;
+#endif
 }
 
 int 
 utmp_init(char *file)
 {
+#ifdef HANDLE_UTMP
 	utmpfd = open(file, O_RDWR);
 
 	setegid(getgid());
 
 	return utmpfd;
+#else
+        return -1;
+#endif
 }
 
 void 
 utmp_exit()
 {
+#ifdef HANDLE_UTMP
 	int     vtl = 0;
 
 	for (vtl = 0; vtl < VT_MAXVT; vtl++)
 		if (vt_to_pty[vtl] != -1)
 			utmp_delentry(vt_to_pty[vtl]);
+#endif
 }

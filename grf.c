@@ -55,6 +55,14 @@ static int grf_fds[MAXGRF];
 static int numgrf;
 extern int scrn;
 
+#ifndef HANDLE_GFX
+#define FAKE_WIDTH 640
+#define FAKE_HEIGHT 480
+#define FAKE_PIXELS (FAKE_WIDTH*FAKE_HEIGHT)
+#define FAKE_BYTES (FAKE_PIXELS/8)
+static u_char fake_buffer[FAKE_BYTES];
+#endif
+
 static u_short pointer_arrow[] = {
 	0x0000,			/* ................ */
 	0x4000,			/* .*.............. */
@@ -112,8 +120,10 @@ grf_init(char *fontname, int scrn)
 	struct grfterm *gt;
 
 	numgrf = 0;
-	for (j = 0, i = scrn; j < MAXGRF; j++, i = (++i) % MAXGRF) {
+	for (j = 0, i = scrn; j < MAXGRF; j++, i = (i + 1) % MAXGRF) {
 		grf_fds[i] = -1;
+
+#ifdef HANDLE_GFX
 		physscreen = NULL;
 
 		sprintf(devstr, "/dev/grf%x", i);
@@ -163,6 +173,24 @@ grf_init(char *fontname, int scrn)
 
 		gi = &gp->g_display;
 		gi->fbbase = (caddr_t) physscreen;
+#else
+                gp = &grf_Softc[numgrf];
+		gi = &gp->g_display;
+                gt = &gp->g_term;
+                gm = &gp->g_mouse;
+
+                gi->mode_id = 0; // Not sued.
+                gi->fbbase = (caddr_t) fake_buffer;
+                gi->fbsize = 0;
+                gi->fboff = 0;
+                gi->width = FAKE_WIDTH;
+                gi->height = FAKE_HEIGHT;
+                gi->hres = 0; // Not used.
+                gi->vres = 0; // Not used.
+                gi->ptype = 0; // Not used.
+                gi->psize = 1; // Bits.
+                gi->rowbytes = gi->width*gi->psize/8;
+#endif
 
 		if (strcmp(fontname, "default") == 0) {
 			if (gi->width < 1280) {	/* I am not sight-impaired.
@@ -235,7 +263,7 @@ grfcompat(struct grfmode * modep, int gfd)
 	modep->ptype = 0;
 	modep->psize = olde.gd_planes;
 
-	screen = (unsigned char *) 0x10000000 + numgrf * 0x1000000;
+	screen = (caddr_t) 0x10000000 + numgrf * 0x1000000;
 	if (ioctl(gfd, GRFIOCMAP, &screen) == -1) {
 		perror("GRFIOCMAP");
 		return NULL;
@@ -301,10 +329,10 @@ grf_writestr(int grf, int len, unsigned char *s, int x, int y, int attr,
 	int     width, height, numleft;
 	struct font *f;
 
-	u_long  buf[32 * 16];
+	uint32_t  buf[32 * 16];
 	int     startx, endx, longstartx, longendx;
 	int     numlongs, sh, startchar, endchar;
-	register u_long *bufp;
+	register uint32_t *bufp;
 	register int j;
 
 	if (grf == -1) {
@@ -461,6 +489,31 @@ nomiddle:
 	}
 	showmouse(gp);
 }
+
+#ifndef HANDLE_GFX
+static void write_fake_ppm()
+{
+    FILE *f = fopen("out.ppm", "wb");
+    fprintf(f, "P6 %d %d 255\n", FAKE_WIDTH, FAKE_HEIGHT);
+
+    for (int i = 0; i < FAKE_BYTES; i++) {
+        u_char b = fake_buffer[i - i%4 + (3 - i%4)];
+
+        for (int j = 0; j < 8; j++) {
+            u_char pixel[3];
+            u_char color = ((b & 0x80) != 0) ? 255 : 0;
+            pixel[0] = color;
+            pixel[1] = color;
+            pixel[2] = color;
+            fwrite((char *) pixel, 1, 3, f);
+            b <<= 1;
+        }
+    }
+
+    fclose(f);
+}
+#endif
+
 /*
  * grf_flush()
  *
@@ -480,10 +533,14 @@ grf_flush(int grf)
 	gt = &gp->g_term;
 
 	if (gt->buflen > 0) {
-		grf_writestr(grf, gt->buflen, gt->buf, gt->bufx, gt->bufy,
+		grf_writestr(grf, gt->buflen, (u_char *) gt->buf, gt->bufx, gt->bufy,
 		    gt->bufatt, gt->bufcol);
 		gt->buflen = 0;
 	}
+
+#ifndef HANDLE_GFX
+        write_fake_ppm();
+#endif
 }
 /*
  * grf_writechar()
@@ -527,8 +584,8 @@ void
 grf_eraserect(int grf, int x1, int y1, int x2, int y2, int color)
 {
 	struct grf_softc *gp;
-	u_long *start, *end, longsperline, longspertline, x, y;
-	register u_long *ptr, c;
+	uint32_t *start, *end, longsperline, longspertline, x, y;
+	register uint32_t *ptr, c;
 	register int len, i;
 	u_char *sc;
 	struct font *f;
@@ -562,10 +619,10 @@ grf_eraserect(int grf, int x1, int y1, int x2, int y2, int color)
 				 * is supposed */
 	/* to be, but it's 0x7fffffff, which isn't quite right. */
 #endif /* INVERSE */
-	longsperline = gp->g_display.rowbytes / sizeof(long);
+	longsperline = gp->g_display.rowbytes / sizeof(uint32_t);
 	longspertline = longsperline * gp->g_term.font.height;
 
-	ptr = (u_long *) (gp->g_display.fbbase);
+	ptr = (uint32_t *) (gp->g_display.fbbase);
 	start = ptr + y1 * longspertline;
 	end = ptr + (y2 + 1) * longspertline;
 	if (x1 == 0 && x2 == gp->g_term.numtcols - 1) {
@@ -588,7 +645,7 @@ grf_eraserect(int grf, int x1, int y1, int x2, int y2, int color)
 			} else {
 				for (y = y1; y <= y2; y++) {
 					for (x = x1; x <= x2; x++) {
-						grf_writestr(grf, 1, " ", x,
+						grf_writestr(grf, 1, (u_char *) " ", x,
 						    y, T_NORMAL, color);
 					}
 				}
@@ -596,7 +653,7 @@ grf_eraserect(int grf, int x1, int y1, int x2, int y2, int color)
 		} else {
 			for (y = y1; y <= y2; y++) {
 				for (x = x1; x <= x2; x++) {
-					grf_writestr(grf, 1, " ", x,
+					grf_writestr(grf, 1, (u_char *) " ", x,
 					    y, T_NORMAL, color);
 				}
 			}
@@ -616,9 +673,9 @@ grf_blankscreen(int grf)
 	long    longcnt;
 /* MBW -- added the next two lines for the fix below */
 	register long rowcnt, longstore, rowbytes;
-	register unsigned long *rowptr;
+	register uint32_t *rowptr;
 
-	register unsigned long *screenptr;
+	register uint32_t *screenptr;
 	struct grf_softc *gp;
 
 	if (grf == -1) {
@@ -636,9 +693,9 @@ grf_blankscreen(int grf)
 /* MBW -- fix the really inefficient screen-clearing */
 	longstore = (gp->g_display.width) / 32;
 	rowcnt = gp->g_display.height;
-	rowptr = (unsigned long *) gp->g_display.fbbase;
+	rowptr = (uint32_t *) gp->g_display.fbbase;
 	/* divide by 4 because rowbytes will be added to a (long *) */
-	rowbytes = gp->g_display.rowbytes / sizeof(long);
+	rowbytes = gp->g_display.rowbytes / sizeof(uint32_t);
 	while (rowcnt--) {
 		screenptr = rowptr;
 		longcnt = longstore;
@@ -661,7 +718,7 @@ void
 grf_flashscreen(int grf)
 {
 	register int longcnt;
-	register unsigned long *screenptr;
+	register uint32_t *screenptr;
 	struct grf_softc *gp;
 
 	if (grf == -1) {
@@ -677,12 +734,12 @@ grf_flashscreen(int grf)
 	 */
 
 	longcnt = gp->g_display.rowbytes * gp->g_display.height;
-	screenptr = (unsigned long *) gp->g_display.fbbase;
+	screenptr = (uint32_t *) gp->g_display.fbbase;
 	while (longcnt--) {
 		*screenptr++ ^= 0xffffffff;
 	}
 	longcnt = gp->g_display.rowbytes * gp->g_display.height;
-	screenptr = (unsigned long *) gp->g_display.fbbase;
+	screenptr = (uint32_t *) gp->g_display.fbbase;
 	while (longcnt--) {
 		*screenptr++ ^= 0xffffffff;
 	}
@@ -736,10 +793,10 @@ grf_scrollup(int grf, int x1, int y1, int x2, int y2, int numlines,
     int color)
 {
 	struct grf_softc *gp;
-	register u_long *ptr1, *ptr2;
-	u_long  longspertline /* , numlongs */ ;
+	register uint32_t *ptr1, *ptr2;
+	uint32_t  longspertline /* , numlongs */ ;
 /* MBW -- added the following line for the efficiency fix below */
-	u_long  rowbytes, bytecount;
+	uint32_t  rowbytes, bytecount;
 	long    rowcnt;
 
 	if (grf == -1) {
@@ -768,9 +825,9 @@ grf_scrollup(int grf, int x1, int y1, int x2, int y2, int numlines,
 	hidemouse(gp);
 
 	longspertline = gp->g_display.rowbytes * gp->g_term.font.height /
-	    sizeof(long);
+	    sizeof(uint32_t);
 	/* MBW -- divide by 4 because it will be added to a (long*) */
-	rowbytes = gp->g_display.rowbytes / sizeof(long);
+	rowbytes = gp->g_display.rowbytes / sizeof(uint32_t);
 
 	if (numlines > 0) {
 		if (x1 == 0 && x2 == gp->g_term.numtcols - 1) {
@@ -781,7 +838,7 @@ grf_scrollup(int grf, int x1, int y1, int x2, int y2, int numlines,
 				return;
 			}
 			bytecount = (7 + gp->g_term.font.width * gp->g_term.numtcols) >> 3;
-			ptr1 = (u_long *) (gp->g_display.fbbase) +
+			ptr1 = (uint32_t *) (gp->g_display.fbbase) +
 			    y1 * longspertline;
 			ptr2 = ptr1 + longspertline * numlines;
 			while (rowcnt--) {
@@ -804,7 +861,7 @@ grf_scrollup(int grf, int x1, int y1, int x2, int y2, int numlines,
 					return;
 				}
 				bytecount = (7 + gp->g_term.font.width * gp->g_term.numtcols) >> 3;
-				ptr1 = (u_long *) (gp->g_display.fbbase) +
+				ptr1 = (uint32_t *) (gp->g_display.fbbase) +
 				    (y2 + 1) * longspertline;
 				ptr1 -= rowbytes;
 				ptr2 = ptr1 + longspertline * numlines;

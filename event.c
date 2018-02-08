@@ -31,7 +31,9 @@
  */
 
 
+#ifdef HANDLE_ADB
 #include <machine/adbsys.h>
+#endif
 
 #include "config.h"
 
@@ -45,6 +47,7 @@ void    kbd_doevent(int key);
 void    mouse_doevent(int dx, int dy, unsigned int buttons, int dpi);
 
 
+#ifdef HANDLE_ADB
 void 
 event_handle(
     adb_event_t * event)
@@ -65,3 +68,4 @@ event_handle(
 		break;
 	}
 }
+#endif

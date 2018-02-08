@@ -4,6 +4,9 @@
  * grf.h
  */
 
+#include <sys/types.h>
+#include <inttypes.h>
+
 #ifdef GRF_COMPAT
 #include "grfioctl.h"
 #else
@@ -26,7 +29,7 @@ struct grfterm {
 	struct font font;	/* Normal font			 */
 	struct font bold;	/* Bold font			 */
 	u_int   col[8];		/* Color for the 8 main colors	 */
-	u_long  backcol[8];	/* Like "col" but shifted	 */
+	uint32_t backcol[8];	/* Like "col" but shifted	 */
 	char    buf[MAXTERMBUF];/* Write-ahead buffer		 */
 	int     buflen;		/* buf's length			 */
 	int     bufx, bufy;	/* Location of buf's start	 */

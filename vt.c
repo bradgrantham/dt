@@ -21,7 +21,7 @@
  */
 
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "config.h"
 
@@ -226,8 +226,8 @@ drawscreen(struct vt_s * v, int y1, int y2)
 
 	for (y = y1; y < y2; y++) {
 		line = v->line[yline++ % VT_POOLSIZE];
-		grf_writeline(v->grf, 0, y, v->numtcols, scr[line], att[line],
-		    col[line]);
+		grf_writeline(v->grf, 0, y, v->numtcols, (u_char *) scr[line], (u_char *) att[line],
+		    (u_char *) col[line]);
 	}
 }
 /*
@@ -490,7 +490,7 @@ send_number(struct vt_s * v, int num)
 		num /= 10;
 	} while (num != 0);
 
-	send_string(v, buf + i);
+	send_string(v, (u_char *) (buf + i));
 }
 /*
  * erasescreen()
@@ -583,7 +583,7 @@ eraseline(struct vt_s * v, int which)
 static void 
 respond_ID(struct vt_s * v)
 {
-	send_string(v, VT102ID);
+	send_string(v, (u_char *) VT102ID);
 }
 /*
  * status_report()
@@ -594,7 +594,7 @@ respond_ID(struct vt_s * v)
 static void 
 status_report(struct vt_s * v)
 {
-	send_string(v, "\033[0n");
+	send_string(v, (u_char *) "\033[0n");
 }
 /*
  * cursor_report()
@@ -605,11 +605,11 @@ status_report(struct vt_s * v)
 static void 
 cursor_report(struct vt_s * v)
 {
-	send_string(v, "\e[");
+	send_string(v, (u_char *) "\e[");
 	send_number(v, v->y + 1);
-	send_string(v, ";");
+	send_string(v, (u_char *) ";");
 	send_number(v, v->x + 1);
-	send_string(v, "R");
+	send_string(v, (u_char *) "R");
 }
 /*
  * save_cur()
@@ -747,7 +747,7 @@ putcharacter(struct vt_s * v, u_char ch)
 {
 	register int line, i;
 
-	if (v->state == ESnormal && ch >= ' ' && ch < 256) {
+	if (v->state == ESnormal && ch >= ' ') {
 		if (v->hanging_cursor) {
 			v->x = 0;
 			movecursordown(v);

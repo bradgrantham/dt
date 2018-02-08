@@ -31,9 +31,9 @@
 void 
 blitRead(struct grf_softc * gp, int x, int y, int sx, int sy,
     void *vbuf);
-inline void 
+void 
 blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
     void *vbuf, void *vmask, int reverse);
 void 
 blitWriteAligned(struct grf_softc * gp, int x, int y, int sx, int sy,
-    u_long * lbuf, int reverse);
+    uint32_t * lbuf, int reverse);

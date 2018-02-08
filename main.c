@@ -20,7 +20,9 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h>
+#ifdef HANDLE_ADB
 #include <machine/adbsys.h>
+#endif
 #include <sys/wait.h>
 
 #include "config.h"
@@ -214,7 +216,9 @@ main_resize(int vtnum, int rows, int cols)
 	ioctl(pty, TIOCSWINSZ, &ws);
 }
 
+#ifdef HANDLE_ADB
 int     adb;			/* make the fd global */
+#endif
 
 void 
 main_newvt(void)
@@ -268,8 +272,10 @@ main_newvt(void)
 
 	child = fork();
 	if (child == 0) {
+#ifdef HANDLE_ADB
 		close(adb);	/* we don't want to pass the fd to
 				 * subprocesses */
+#endif
 		runshell(first, shell, ttylet, ri);
 	}
 	fcntl(f, F_SETFL, O_NDELAY);	/* use nonblocking io for the ptys to
@@ -292,7 +298,9 @@ main_newvt(void)
 void 
 term_handle(int signo)
 {
+#ifdef HANDLE_ADB
 	close(adb);
+#endif
 	grf_exit();
 	exit(0);
 }
@@ -301,7 +309,9 @@ int
 main(int argc, char *argv[])
 {
 	int     n, i, ccons;
+#ifdef HANDLE_ADB
 	adb_event_t event;
+#endif
 	fd_set  fd;
 	char    buf[BUFSIZE];
 	char   *login;
@@ -309,6 +319,7 @@ main(int argc, char *argv[])
 
 	main_init(argc, argv);
 
+#ifdef HANDLE_ADB
 	adb = open("/dev/adb", O_RDONLY);
 	if (adb == -1) {
 		perror("/dev/adb");
@@ -329,6 +340,7 @@ main(int argc, char *argv[])
 		}
 		exit(1);
 	}
+#endif
 	shell = "/bin/sh";
 
 	login = getlogin();
@@ -344,7 +356,9 @@ main(int argc, char *argv[])
 		}
 	}
 	FD_ZERO(&initfd);
+#ifdef HANDLE_ADB
 	FD_SET(adb, &initfd);
+#endif
 
 #ifdef UTMP
 	utmp_init(_PATH_UTMP);	/* open the utmp file */
@@ -385,10 +399,12 @@ main(int argc, char *argv[])
 	while (shells > 0) {
 		fd = initfd;
 		if (select(FD_SETSIZE, &fd, NULL, NULL, NULL) > 0) {
+#ifdef HANDLE_ADB
 			if (FD_ISSET(adb, &fd)) {
 				read(adb, &event, sizeof(event));
 				event_handle(&event);
 			}
+#endif
 			for (i = 0; i < VT_MAXVT; i++) {
 				if (vt_to_pty[i] != -1 &&
 				    FD_ISSET(vt_to_pty[i], &fd)) {
@@ -406,14 +422,16 @@ main(int argc, char *argv[])
 						if (n == -1) {
 							continue;
 						} else {
-							vt_putchar(i, buf, n);
+							vt_putchar(i, (unsigned char *) buf, n);
 						}
 				}
 			}
 		}
 	}
 
+#ifdef HANDLE_ADB
 	close(adb);
+#endif
 	grf_exit();
 	utmp_exit();
 

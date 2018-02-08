@@ -32,7 +32,9 @@
 
 #include "config.h"
 
+#ifdef HANDLE_ADB
 #include <machine/adbsys.h>
+#endif
 #include "mouse.h"
 #include "mux.h"
 

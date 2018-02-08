@@ -4,6 +4,8 @@
  * $Id: vt.h,v 1.5 1996/06/09 12:32:33 vuori Exp $
  */
 
+#include <sys/types.h>
+
 #define VT_MAXVT	9
 #define	VT_MAXCOLS	132
 #define	VT_MAXROWS	100

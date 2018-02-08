@@ -1,5 +1,7 @@
 #include <sys/file.h>
+#ifdef HANDLE_BELL
 #include <machine/iteioctl.h>
+#endif
 #include <unistd.h>
 
 #include "bell.h"
@@ -27,5 +29,7 @@ bell_shutup(int signo)
 void 
 beep(void)
 {
+#ifdef HANDLE_BELL
 	ioctl(itefd, ITEIOC_RINGBELL);
+#endif
 }

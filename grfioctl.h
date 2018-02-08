@@ -42,6 +42,8 @@
  *	@(#)grfioctl.h	7.2 (Berkeley) 11/4/90
  */
 
+#include <sys/types.h>
+
 struct grfmode {
 	u_int8_t mode_id;	/* Identifier for mode              */
 	caddr_t fbbase;		/* Base of page of frame buffer     */

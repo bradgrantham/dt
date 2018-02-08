@@ -58,7 +58,7 @@ blitRead(struct grf_softc * gp, int x, int y, int sx, int sy,
     void *vbuf)
 {
 	int     sh, longsperline;
-	u_long *sc, *lbuf = vbuf;
+	uint32_t *sc, *lbuf = vbuf;
 	u_short *sbuf = vbuf;
 	u_char *cbuf = vbuf;
 
@@ -69,8 +69,8 @@ blitRead(struct grf_softc * gp, int x, int y, int sx, int sy,
 		sy = 0;
 	}
 	if (gp->g_display.psize == 1) {
-		longsperline = gp->g_display.rowbytes / sizeof(long);
-		sc = (u_long *) (gp->g_display.fbbase) +
+		longsperline = gp->g_display.rowbytes / sizeof(uint32_t);
+		sc = (uint32_t *) (gp->g_display.fbbase) +
 		    y * longsperline + x / 32;
 		sh = 32 - sx - x % 32;
 		if (sh < 0) {	/* Split across long-word boundry */
@@ -121,12 +121,12 @@ blitRead(struct grf_softc * gp, int x, int y, int sx, int sy,
  * Writes a bitmap to the screen.
  */
 
-inline void 
+void 
 blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
     void *vbuf, void *vmask, register int reverse)
 {
 	int     sh, longsperline;
-	u_long *sc, *lbuf = vbuf, *lmask = vmask, ubuf, umask;
+	uint32_t *sc, *lbuf = vbuf, *lmask = vmask, ubuf, umask;
 	u_short *sbuf = vbuf, *smask = vmask;
 	u_char *cbuf = vbuf, *cmask = vmask;
 
@@ -144,15 +144,15 @@ blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
 		y = 0;
 	}
 
-	longsperline = gp->g_display.rowbytes / sizeof(long);
-	sc = (u_long *) (gp->g_display.fbbase) +
+	longsperline = gp->g_display.rowbytes / sizeof(uint32_t);
+	sc = (uint32_t *) (gp->g_display.fbbase) +
 	    y * longsperline + x / 32;
 	sh = 32 - sx - x % 32;
 	if (sh < 0) {		/* Split across long-word boundry */
 		if (sx <= 8) {
 			while (sy--) {
-				umask = (u_long) * cmask++;
-				ubuf = (u_long) * cbuf++ ^ reverse;
+				umask = (uint32_t) * cmask++;
+				ubuf = (uint32_t) * cbuf++ ^ reverse;
 				*sc = (*sc & ~(umask >> -sh)) |
 				    (ubuf >> -sh);
 				*(sc + 1) = (*(sc + 1) &
@@ -163,8 +163,8 @@ blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
 		} else
 			if (sx <= 16) {
 				while (sy--) {
-					umask = (u_long) * smask++;
-					ubuf = (u_long) * sbuf++ ^ reverse;
+					umask = (uint32_t) * smask++;
+					ubuf = (uint32_t) * sbuf++ ^ reverse;
 					*sc = (*sc & ~(umask >> -sh)) |
 					    (ubuf >> -sh);
 					*(sc + 1) = (*(sc + 1) &
@@ -174,8 +174,8 @@ blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
 				}
 			} else {
 				while (sy--) {
-					umask = (u_long) * lmask++;
-					ubuf = (u_long) * lbuf++ ^ reverse;
+					umask = (uint32_t) * lmask++;
+					ubuf = (uint32_t) * lbuf++ ^ reverse;
 					*sc = (*sc & ~(umask >> -sh)) |
 					    (ubuf >> -sh);
 					*(sc + 1) = (*(sc + 1) &
@@ -187,8 +187,8 @@ blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
 	} else {
 		if (sx <= 8) {
 			while (sy--) {
-				umask = (u_long) * cmask++;
-				ubuf = (u_long) * cbuf++ ^ reverse;
+				umask = (uint32_t) * cmask++;
+				ubuf = (uint32_t) * cbuf++ ^ reverse;
 				*sc = (*sc & ~(umask << sh)) |
 				    (ubuf << sh);
 				sc += longsperline;
@@ -196,16 +196,16 @@ blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
 		} else
 			if (sx <= 16) {
 				while (sy--) {
-					umask = (u_long) * smask++;
-					ubuf = (u_long) * sbuf++ ^ reverse;
+					umask = (uint32_t) * smask++;
+					ubuf = (uint32_t) * sbuf++ ^ reverse;
 					*sc = (*sc & ~(umask << sh)) |
 					    (ubuf << sh);
 					sc += longsperline;
 				}
 			} else {
 				while (sy--) {
-					umask = (u_long) * lmask++;
-					ubuf = (u_long) * lbuf++ ^ reverse;
+					umask = (uint32_t) * lmask++;
+					ubuf = (uint32_t) * lbuf++ ^ reverse;
 					*sc = (*sc & ~(umask << sh)) |
 					    (ubuf << sh);
 					sc += longsperline;
@@ -221,11 +221,11 @@ blitWrite(struct grf_softc * gp, int x, int y, int sx, int sy,
 
 void 
 blitWriteAligned(struct grf_softc * gp, int x, int y, int sx, int sy,
-    register u_long * lbuf, register int reverse)
+    register uint32_t * lbuf, register int reverse)
 {
 	int     longsperline;
-	register u_long *sc;
-	u_long *ssc;
+	register uint32_t *sc;
+	uint32_t *ssc;
 
 	if (y + sy > gp->g_display.height) {
 		sy = gp->g_display.height - y;
@@ -233,8 +233,8 @@ blitWriteAligned(struct grf_softc * gp, int x, int y, int sx, int sy,
 	if (y < 0) {
 		y = 0;
 	}
-	longsperline = gp->g_display.rowbytes / sizeof(long);
-	ssc = (u_long *) (gp->g_display.fbbase) +
+	longsperline = gp->g_display.rowbytes / sizeof(uint32_t);
+	ssc = (uint32_t *) (gp->g_display.fbbase) +
 	    y * longsperline + x / 32;
 	sx /= 32;
 	if (reverse) {

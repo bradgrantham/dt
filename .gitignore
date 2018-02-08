@@ -1,0 +1,6 @@
+*.o
+dt
+*.ppm
+*.png
+vers.h
+compile

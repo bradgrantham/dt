@@ -7,7 +7,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "func.h"
